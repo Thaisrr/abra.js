@@ -1,12 +1,5 @@
-export type AbraConfigs = {
-    params?: URLSearchParams,
-} & RequestInit;
+import {AbraConfigs, HttpMethod, Interceptor} from "./types";
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-
-export interface Interceptor <T extends Response | Request>{
-    intercept : (request: T ) => T;
-}
 export class Abra {
 
     private outInterceptors: Interceptor<Request>[] = [];

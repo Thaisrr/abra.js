@@ -2,7 +2,11 @@
   "name": "abra",
   "version": "0.0.1",
   "description": "A simple wrapper for fetch.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,6 +19,17 @@
     "ajax",
     "interceptor"
   ],
-  "author": "Thaïs Révillon",
-  "license": "MIT"
+  "author": "Thaïs Révillon <thais.r@live.fr>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Thaisrr/abra.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Thaisrr/abra.js/issues"
+  },
+  "homepage": "https://github.com/Thaisrr/abra.js#readme",
+  "dependencies": {
+    "typescript": "^4.9.4"
+  }
 }
