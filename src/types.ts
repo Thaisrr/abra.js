@@ -1,5 +1,5 @@
 export type AbraConfigs = {
-    params?: URLSearchParams,
+    params?: object | URLSearchParams,
 } & RequestInit;
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';

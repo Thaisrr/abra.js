@@ -41,22 +41,22 @@ export class Abra {
         return await response.json() as T;
     }
 
-    private addToInterceptors<T extends Response | Request>(i: Interceptor<T>, interceptors: Interceptor<T>[], first?, last?) {
+    private addToInterceptors<T extends Response | Request>(callback: (r: T) => T, interceptors: Interceptor<T>[], first?, last?) {
         if (first) {
-            interceptors.unshift(i);
+            interceptors.unshift({intercept: callback});
         } else if (last) {
-            interceptors.push(i);
+            interceptors.push({intercept: callback});
         } else {
-            interceptors.splice(1, 0, i);
+            interceptors.splice(1, 0, {intercept: callback});
         }
     }
 
-    addInInterceptor(interceptor: Interceptor<Response>, first = false, last = false) {
-            this.addToInterceptors(interceptor, this.inInterceptors, first, last);
+    addInInterceptor(callback: (response: Response) => Response, first = false, last = false) {
+            this.addToInterceptors(callback, this.inInterceptors, first, last);
     }
 
-    addOutInterceptor(interceptor: Interceptor<Request>, first = false, last = false) {
-        this.addToInterceptors(interceptor, this.outInterceptors, first, last);
+    addOutInterceptor(callback: (request: Request) => Request, first = false, last = false) {
+        this.addToInterceptors(callback, this.outInterceptors, first, last);
     }
 
     removeInterceptor(interceptor: Interceptor<any>) {
