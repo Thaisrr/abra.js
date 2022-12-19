@@ -1,0 +1,18 @@
+{
+  "secret": {
+    "message": "Ceci est une phrase secrete"
+  },
+  "datas": [
+    {
+      "id": 1,
+      "message": "Hello World"
+    }
+  ],
+  "users": [
+    {
+      "email": "toto@mail.fr",
+      "password": "$2a$10$L/SUYRPG9sraOTxXXjSGaOqDo500WN9IrzHUNIKe5fAb14MO6W7Rm",
+      "id": 1
+    }
+  ]
+}

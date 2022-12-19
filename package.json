@@ -8,7 +8,9 @@
     "dist"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test-db": "json-server --watch ./tests/mocks/datas.json -m ./node_modules/json-server-auth --port 8080 --routes ./tests/mocks/routes.json",
+    "test": "nyc ./node_modules/.bin/_mocha 'test/**/*.ts'",
+    "publish": "tsc && npm version patch && npm publish"
   },
   "keywords": [
     "typescript",
@@ -31,5 +33,19 @@
   "homepage": "https://github.com/Thaisrr/abra.js#readme",
   "dependencies": {
     "typescript": "^4.9.4"
+  },
+  "devDependencies": {
+    "@testdeck/mocha": "^0.3.3",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "@types/node-fetch": "^2.6.2",
+    "chai": "^4.3.7",
+    "json-server": "^0.17.1",
+    "json-server-auth": "^2.1.0",
+    "mocha": "^10.2.0",
+    "mocha-typescript": "^1.1.17",
+    "nyc": "^15.1.0",
+    "ts-mockito": "^2.6.1",
+    "ts-node": "^10.9.1"
   }
 }

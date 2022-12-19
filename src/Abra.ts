@@ -9,28 +9,30 @@ export class Abra {
     private constructor() {}
 
     static getInstance() {
-        return Abra.instance || new Abra();
+        if (!Abra.instance) {
+            Abra.instance = new Abra();
+        }
+        return Abra.instance;
     }
-
 
     async get<T>(url: string, options?: AbraConfigs) {
         return await this.cadabra<T>(url, options, 'GET');
     }
 
-    async post<T>(url: string, body: BodyInit, options?: AbraConfigs) {
-        return await this.cadabra<T>(url, {...options, body}, 'POST');
+    async post<T>(url: string, body: object, options?: AbraConfigs) {
+        return await this.cadabra<T>(url, {...options}, 'POST', body);
     }
 
-    async put<T>(url: string, body: BodyInit, options: AbraConfigs) {
-        return await this.cadabra<T>(url, {...options, body}, 'PUT');
+    async put<T extends object>(url: string, body: object, options?: AbraConfigs) {
+        return await this.cadabra<T>(url, {...options}, 'PUT', body);
     }
 
-    async delete<T>(url: string, options: AbraConfigs) {
+    async delete<T>(url: string, options?: AbraConfigs) {
         return await this.cadabra<T>(url, options, 'DELETE');
     }
 
-    async patch<T>(url: string, body: BodyInit, options?: AbraConfigs) {
-        return await this.cadabra<T>(url, {...options, body}, 'PATCH');
+    async patch<T>(url: string, body: Partial<T>, options?: AbraConfigs) {
+        return await this.cadabra<T>(url, {...options}, 'PATCH', body);
     }
 
     async all<T>(...requests: Promise<T>[]) {
@@ -42,16 +44,17 @@ export class Abra {
             const error = await response.json();
             throw Error(error.message);
         }
-        return await response.json() as T;
+        const data = await response.json() as T;
+        return {data, response: response};
     }
 
-    private addToInterceptors<T extends Response | Request>(callback: (r: T) => T, interceptors: Interceptor<T>[], first?, last?) {
+    private addToInterceptors<T extends Response | Request>(callback: Interceptor<T>, interceptors: Interceptor<T>[], first?: boolean, last?: boolean) {
         if (first) {
-            interceptors.unshift({intercept: callback});
+            interceptors.unshift(callback);
         } else if (last) {
-            interceptors.push({intercept: callback});
+            interceptors.push(callback);
         } else {
-            interceptors.splice(1, 0, {intercept: callback});
+            interceptors.splice(1, 0, callback);
         }
     }
 
@@ -64,8 +67,8 @@ export class Abra {
     }
 
     removeInterceptor(interceptor: Interceptor<any>) {
-        const i_in = this.inInterceptors.indexOf(interceptor);
-        const i_out = this.outInterceptors.indexOf(interceptor);
+        const i_in = this.inInterceptors.findIndex(i => i == interceptor);
+        const i_out = this.outInterceptors.findIndex(i => i == interceptor);
         if (i_out > -1) {
             this.outInterceptors.splice(i_out, 1);
         }
@@ -75,11 +78,11 @@ export class Abra {
     }
 
     private applyOutInterceptors(request: Request) {
-        return  this.outInterceptors.reduce((req, interceptor) => interceptor.intercept(req), request);
+        return  this.outInterceptors.reduce((req, interceptor) => interceptor(req), request);
     }
 
     private applyInInterceptors(response:  Response) {
-        return this.inInterceptors.reduce((res, interceptor) => interceptor.intercept(res), response);
+        return this.inInterceptors.reduce((res, interceptor) => interceptor(res), response);
     }
 
     /**
@@ -87,21 +90,23 @@ export class Abra {
      * @param url
      * @param options
      * @param method
-     * @returns Promise<T> : the mocks returned by the server
+     * @param body
+     * @returns Promise<T> : the datas returned by the server
      */
-    async cadabra<T>(url: string, options?: AbraConfigs, method: HttpMethod = 'GET') {
+    async cadabra<T>(url: string, options?: AbraConfigs, method: HttpMethod = 'GET', body?: object): Promise<{ data: T, response: Response }> {
         try {
-            const abortController = (options.timeout)? new AbortController() : null ;
+            const abortController = (options?.timeout)? new AbortController() : null ;
             let request = new Request(url + (options?.params || ''), {
-                method,
                 ...options,
+                method,
+                body: (body) ? JSON.stringify(body) :   null,
+                headers: {'Content-Type': 'application/json'},
                 signal: abortController?.signal || null,
-                body: options?.body ? JSON.stringify(options.body) : null,
             });
 
             request = this.applyOutInterceptors(request.clone());
             let res = await fetch(request);
-            if(abortController) {
+            if(abortController && options?.timeout) {
                 setTimeout(() => abortController.abort(), options.timeout);
             }
             res = this.applyInInterceptors(res);

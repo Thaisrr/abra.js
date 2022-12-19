@@ -15,12 +15,13 @@ npm install abra.js
 ## Usage
 
 Abra.JS is designed to be as simple as possible, and is designed to be used in a similar way to the native fetch API.
+No more .json() method, you can use your datas in the .data property of the response.
 
 ```js
 import abra from 'abra.js';
 
 abra.get('https://example.com')
-    .then(data => console.log(data));
+    .then(res => console.log(res.data));
 ```
 
 Abra.JS also supports the use of async/await, which is recommended for use in production.
@@ -29,7 +30,7 @@ Abra.JS also supports the use of async/await, which is recommended for use in pr
 import abra from 'abra.js';
 
 async function getData() {
-    const data = await abra.get('https://example.com');
+    const {data} = await abra.get('https://example.com');
     console.log(data);
 }
 ```
@@ -47,7 +48,7 @@ Simple get request :
 ```
 
 - url : (string) url to fetch
-- options : (object) the options for the request ( params, headers, and any fetch options available)
+- options : (object) the options for the request ( params, headers, and any fetch options available);
 
 ### Post, Put, Patch
 
