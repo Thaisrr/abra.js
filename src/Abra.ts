@@ -33,6 +33,10 @@ export class Abra {
         return await this.cadabra<T>(url, {...options, body}, 'PATCH');
     }
 
+    async all<T>(...requests: Promise<T>[]) {
+        return await Promise.all(requests);
+    }
+
     private async handleRequest<T>(response: Response) {
         if (!response.ok) {
             const error = await response.json();
@@ -83,16 +87,23 @@ export class Abra {
      * @param url
      * @param options
      * @param method
-     * @returns Promise<T> : the datas returned by the server
+     * @returns Promise<T> : the mocks returned by the server
      */
     async cadabra<T>(url: string, options?: AbraConfigs, method: HttpMethod = 'GET') {
         try {
+            const abortController = (options.timeout)? new AbortController() : null ;
             let request = new Request(url + (options?.params || ''), {
                 method,
-                ...options
+                ...options,
+                signal: abortController?.signal || null,
+                body: options?.body ? JSON.stringify(options.body) : null,
             });
+
             request = this.applyOutInterceptors(request.clone());
             let res = await fetch(request);
+            if(abortController) {
+                setTimeout(() => abortController.abort(), options.timeout);
+            }
             res = this.applyInInterceptors(res);
             return await this.handleRequest<T>(res);
         } catch (e) {
