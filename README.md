@@ -1,5 +1,13 @@
 # Abra.JS
 
+<details>
+    <summary>[BETA] Important</summary>
+
+<i>This library is still in development, and should not be used in production. </i>
+<p>Feel free to help me improve it ! You can contact me at <a href="mailto:thais.r@live.fr">thais.r@live.fr</a> </p>
+
+</details>
+
 Abra.JS is a simple, lightweight, and easy to use Javascript library for HttP requests.
 
 It is a wrapper around the native fetch API, and is designed to be as simple as possible.
