@@ -28,6 +28,19 @@ import Abra from "abra.js";
 const abra = Abra();
 ```
 
+Or, alternatively : 
+
+```javascript
+const Abra = require("abra.js").default();
+```
+
+You can also use the CDN version of the library, by adding the following script tag to your HTML file:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/abra.js/dist/index.min.js"></script>
+```
+
+
 ## Usage
 
 Abra.JS is designed to be as simple as possible, and is designed to be used in a similar way to the native fetch API.
