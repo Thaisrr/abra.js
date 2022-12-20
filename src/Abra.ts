@@ -40,11 +40,23 @@ export class Abra {
     }
 
     private async handleRequest<T>(response: Response) {
+        let data: T | null = null;
         if (!response.ok) {
             const error = await response.json();
             throw Error(error.message);
         }
-        const data = await response.json() as T;
+        const contentType = response.headers.get('Content-Type') || response.headers.get('content-type');
+        if(contentType) {
+            if(contentType.includes('application/json')) {
+                data = await response.json() as T;
+            } else if (contentType.includes('text/') || contentType.includes('application/xml')) {
+                data = await response.text() as unknown as T;
+            }  else if (contentType.includes('multipart/form-data') || contentType.includes('application/x-www-form-urlencoded')) {
+                data = await response.formData() as unknown as T;
+            } else {
+                data = await response.blob() as unknown as T;
+            }
+        }
         return {data, response: response};
     }
 
@@ -85,6 +97,20 @@ export class Abra {
         return this.inInterceptors.reduce((res, interceptor) => interceptor(res), response);
     }
 
+    private initRequest(method: HttpMethod, url: string, options?: AbraConfigs, body?: object, abortController? : AbortController) {
+        const headers = new Headers(options?.headers);
+        if(!headers.get('Content-Type') && body) {
+            headers.set('Content-Type', 'application/json');
+        }
+        return new Request(url + (options?.params || ''), {
+            ...options,
+            method,
+            headers,
+            body: (body) ? JSON.stringify(body) :   null,
+            signal: abortController?.signal || null,
+        });
+    }
+
     /**
      * @description Perform the request, with the given options and interceptors.
      * @param url
@@ -93,19 +119,13 @@ export class Abra {
      * @param body
      * @returns Promise<T> : the datas returned by the server
      */
-    async cadabra<T>(url: string, options?: AbraConfigs, method: HttpMethod = 'GET', body?: object): Promise<{ data: T, response: Response }> {
+    async cadabra<T>(url: string, options?: AbraConfigs, method: HttpMethod = 'GET', body?: object): Promise<{ data: T | null, response: Response }> {
         try {
-            const abortController = (options?.timeout)? new AbortController() : null ;
-            let request = new Request(url + (options?.params || ''), {
-                ...options,
-                method,
-                body: (body) ? JSON.stringify(body) :   null,
-                headers: {'Content-Type': 'application/json'},
-                signal: abortController?.signal || null,
-            });
+            const abortController = (options?.timeout)? new AbortController() : undefined ;
+            let initial_request = this.initRequest(method, url, options, body, abortController);
 
-            request = this.applyOutInterceptors(request.clone());
-            let res = await fetch(request);
+            let final_request = this.applyOutInterceptors(initial_request.clone());
+            let res = await fetch(final_request);
             if(abortController && options?.timeout) {
                 setTimeout(() => abortController.abort(), options.timeout);
             }
