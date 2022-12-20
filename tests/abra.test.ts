@@ -143,16 +143,14 @@ describe('Abra', () => {
 
 
     it('should perform a POST request with application/x-www-form-urlencoded payload', async () => {
-        // Create a string of key-value pairs using the URLSearchParams interface
         const formData = new URLSearchParams();
-        formData.append('field1', 'value1');
-        formData.append('field2', 'value2');
+        formData.append('a', 'val_a');
+        formData.append('b', 'val_b');
+        const response = await abra.post< {id: string, a: string, b: string} >(api + '/fields', formData, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+        expect(response?.data).to.deep.equal({id: 1, a: 'val_a', b: 'val_b'});
 
-        // Send the form data to the server using the Abra.post method
-        const response = await abra.post<{ message: string }>(url, formData, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-
-        // Make assertions about the response from the server
-        expect(response?.data?.message).to.equal(undefined);
+        const deleteResponse = await abra.delete< {} >(api + '/fields/1');
+        expect(deleteResponse.data).to.deep.equal({});
     });
 
 

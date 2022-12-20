@@ -97,16 +97,21 @@ export class Abra {
         return this.inInterceptors.reduce((res, interceptor) => interceptor(res), response);
     }
 
-    private initRequest(method: HttpMethod, url: string, options?: AbraConfigs, body?: object, abortController? : AbortController) {
+    private initRequest(method: HttpMethod, url: string, options?: AbraConfigs, body?: any, abortController? : AbortController) {
         const headers = new Headers(options?.headers);
         if(!headers.get('Content-Type') && body) {
             headers.set('Content-Type', 'application/json');
         }
+
+        if(headers.get('Content-Type') && headers.get('Content-Type')?.includes('application/json') && body) {
+            body = JSON.stringify(body);
+        }
+
         return new Request(url + (options?.params || ''), {
             ...options,
             method,
             headers,
-            body: (body) ? JSON.stringify(body) :   null,
+            body,
             signal: abortController?.signal || null,
         });
     }
@@ -119,7 +124,7 @@ export class Abra {
      * @param body
      * @returns Promise<T> : the datas returned by the server
      */
-    async cadabra<T>(url: string, options?: AbraConfigs, method: HttpMethod = 'GET', body?: object): Promise<{ data: T | null, response: Response }> {
+    async cadabra<T>(url: string, options?: AbraConfigs, method: HttpMethod = 'GET', body?: any): Promise<{ data: T | null, response: Response }> {
         try {
             const abortController = (options?.timeout)? new AbortController() : undefined ;
             let initial_request = this.initRequest(method, url, options, body, abortController);
