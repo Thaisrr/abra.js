@@ -10,7 +10,7 @@
   "scripts": {
     "test-db": "json-server --watch ./tests/mocks/datas.json -m ./node_modules/json-server-auth --port 8080 --routes ./tests/mocks/routes.json",
     "test": "nyc ./node_modules/.bin/_mocha 'test/**/*.ts'",
-    "publish": "tsc && npm version patch && npm publish"
+    "lets-go": "tsc && npm version patch && npm publish"
   },
   "keywords": [
     "typescript",
