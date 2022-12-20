@@ -3,7 +3,7 @@
     "module": "commonjs",
     "experimentalDecorators": true,
     "target": "es2015",
-    "lib": ["ES2015", "DOM"],
+    "lib": ["ES2020", "DOM"],
     "declaration": true,
     "outDir": "./dist",
     "strict": true

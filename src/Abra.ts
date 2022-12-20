@@ -1,3 +1,4 @@
+import 'isomorphic-fetch';
 import {AbraConfigs, HttpMethod, Interceptor} from "./types";
 
 export class Abra {
@@ -42,8 +43,7 @@ export class Abra {
     private async handleRequest<T>(response: Response) {
         let data: T | null = null;
         if (!response.ok) {
-            const error = await response.json();
-            throw Error(error.message);
+            throw await response.json();
         }
         const contentType = response.headers.get('Content-Type') || response.headers.get('content-type');
         if(contentType) {
@@ -144,4 +144,5 @@ export class Abra {
     }
 }
 
-export default Abra.getInstance();
+const instance = Abra.getInstance();
+export default instance;
