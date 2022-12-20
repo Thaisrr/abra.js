@@ -1,17 +1,18 @@
 import {expect} from 'chai';
 import 'mocha';
-import {Abra} from '../dist/Abra';
+import Abra from '../dist';
+import {AbraClass} from "../dist";
 //import nock = require("nock");
 
 
 describe('Abra', () => {
-    let abra: Abra;
-    const url = 'http://localhost:8080/datas';
-    const api = 'http://localhost:8080';
+    let abra: AbraClass;
+    const url = 'http://localhost:8082/datas';
+    const api = 'http://localhost:8082';
 
 
     beforeEach(() => {
-        abra = Abra.getInstance();
+        abra = Abra();
 
        /* nock(url)
             .get('/1')
@@ -45,7 +46,7 @@ describe('Abra', () => {
 
 
     it('should keep the same instance', () => {
-        const abra2 = Abra.getInstance();
+        const abra2 = AbraClass.getInstance();
         expect(abra).to.equal(abra2);
     });
 

@@ -144,5 +144,5 @@ export class Abra {
     }
 }
 
-const instance = Abra.getInstance();
-export default instance;
+//const instance = Abra.getInstance();
+//export default instance;

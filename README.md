@@ -20,13 +20,22 @@ Abra.JS is available on NPM, and can be installed with the following command:
 npm install abra.js
 ```
 
+Import the library in your project:
+
+```javascript
+import Abra from "abra.js";
+// Get an instance of Abra
+const abra = Abra();
+```
+
 ## Usage
 
 Abra.JS is designed to be as simple as possible, and is designed to be used in a similar way to the native fetch API.
 No more .json() method, you can use your datas in the .data property of the response.
 
 ```js
-import abra from 'abra.js';
+import Abra from 'abra.js';
+const abra = Abra();
 
 abra.get('https://example.com')
     .then(res => console.log(res.data));
@@ -46,6 +55,7 @@ async function getData() {
 ## Documentation
 
 Abra.JS is designed to be as simple as possible.
+
 
 ### Get
 
