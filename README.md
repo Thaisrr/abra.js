@@ -79,6 +79,10 @@ Exemple :
                 { 'Content-Type': 'application/json' } 
         });
 ```
+There is no need to specify the content-type for JSON data.
+You don't need to transform your data to JSON, Abra.JS will do it for you.
+
+For every other type of data, you need to specify the content-type, and perform the transformation yourself.
 
 ### Delete
 
