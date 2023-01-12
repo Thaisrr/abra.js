@@ -1,12 +1,12 @@
 import {expect} from 'chai';
 import 'mocha';
 import Abra from '../dist';
-import {AbraClass} from "../dist";
+import AbraClass from '../dist';
 //import nock = require("nock");
 
 
 describe('Abra', () => {
-    let abra: AbraClass;
+    let abra = AbraClass();
     const url = 'http://localhost:8082/datas';
     const api = 'http://localhost:8082';
 
@@ -46,7 +46,7 @@ describe('Abra', () => {
 
 
     it('should keep the same instance', () => {
-        const abra2 = AbraClass.getInstance();
+        const abra2 = AbraClass();
         expect(abra).to.equal(abra2);
     });
 
@@ -154,7 +154,16 @@ describe('Abra', () => {
         expect(deleteResponse.data).to.deep.equal({});
     });
 
-
+    it('should concat query params', async () => {
+        const response = await abra.get(url, {
+            params: {
+                id: 1,
+                message: 'Hello World'
+            }
+        });
+        console.log('url', response.response.url);
+        expect(response.response.url).to.equal(url + '?id=1&message=Hello+World');
+    })
 
 });
 

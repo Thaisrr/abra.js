@@ -107,7 +107,12 @@ export class Abra {
             body = JSON.stringify(body);
         }
 
-        return new Request(url + (options?.params || ''), {
+        let params = new URLSearchParams();
+        if(options?.params) {
+           params = new URLSearchParams(options.params as URLSearchParams);
+        }
+
+        return new Request(url + '?' + params.toString(), {
             ...options,
             method,
             headers,
