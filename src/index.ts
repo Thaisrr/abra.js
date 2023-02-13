@@ -7,6 +7,6 @@ function getAbra() {
     return Abra.getInstance();
 }
 
-export default getAbra;
+export default getAbra();
 
 
