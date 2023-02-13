@@ -1,12 +1,10 @@
 export {Interceptor, HttpMethod, AbraConfigs} from "./types";
 export {Abra} from "./Abra";
 
-import {Abra} from "./Abra";
+import {Abra as AbraClass} from "./Abra";
 
-function getAbra() {
-    return Abra.getInstance();
-}
+const Abra = AbraClass.getInstance();
 
-export default getAbra();
+export default Abra;
 
 
