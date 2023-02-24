@@ -1,12 +1,11 @@
 import {expect} from 'chai';
 import 'mocha';
-import Abra from '../dist';
+import abra from '../dist';
 import {Abra as  AbraClass } from '../dist';
 //import nock = require("nock");
 
 
 describe('Abra', () => {
-    let abra = Abra;
     const url = 'http://localhost:8082/datas';
     const api = 'http://localhost:8082';
 

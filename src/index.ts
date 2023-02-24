@@ -3,8 +3,8 @@ export {Abra} from "./Abra";
 
 import {Abra as AbraClass} from "./Abra";
 
-const Abra = AbraClass.getInstance();
+const abra = AbraClass.getInstance();
 
-export default Abra;
+export default abra;
 
 
