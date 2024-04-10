@@ -103,8 +103,13 @@ export class Abra {
             headers.set('Content-Type', 'application/json');
         }
 
+
         if(headers.get('Content-Type') && headers.get('Content-Type')?.includes('application/json') && body) {
             body = JSON.stringify(body);
+        }
+
+        if(headers.get('Content-Type') && headers.get('Content-Type')?.includes('multipart/form-data')) {
+            headers.delete('Content-Type');
         }
 
         let params = new URLSearchParams();
