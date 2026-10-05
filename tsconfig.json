@@ -1,14 +1,20 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "experimentalDecorators": true,
-    "target": "es2015",
-    "lib": ["ES2020", "DOM"],
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
     "declaration": true,
     "outDir": "./dist",
-    "strict": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test"
   ]
 }

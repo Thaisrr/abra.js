@@ -1,178 +1,323 @@
 # Abra.JS
 
-<details>
-    <summary>[BETA] Important</summary>
+Abra.JS is a simple, lightweight and easy to use library for HTTP requests.
 
-<i>This library is still in development, and should not be used in production. </i>
-<p>Feel free to help me improve it ! You can contact me at <a href="mailto:thais.r@live.fr">thais.r@live.fr</a> </p>
-
-</details>
-
-Abra.JS is a simple, lightweight, and easy to use Javascript library for HttP requests.
-
-It is a wrapper around the native fetch API, and is designed to be as simple as possible.
+It is a thin wrapper around the native `fetch` API. No more `.json()`: your data is available in the `.data` property of the result.
 
 ## Installation
-
-Abra.JS is available on NPM, and can be installed with the following command:
 
 ```bash
 npm install abra.js
 ```
 
-Import the library in your project:
-
-```javascript
-import Abra from "abra.js";
-// Get an instance of Abra
-const abra = Abra();
-```
-
-Or, alternatively : 
-
-```javascript
-const Abra = require("abra.js").default();
-```
-
-You can also use the CDN version of the library, by adding the following script tag to your HTML file:
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/abra.js/dist/index.min.js"></script>
-```
-
-
-## Usage
-
-Abra.JS is designed to be as simple as possible, and is designed to be used in a similar way to the native fetch API.
-No more .json() method, you can use your datas in the .data property of the response.
+Abra.JS is an **ES module** and requires **Node.js 20 or later** (or any modern browser, through your bundler). It relies on the native `fetch`, `Request`, `Response` and `Headers`, so there is nothing to polyfill.
 
 ```js
-import Abra from 'abra.js';
-const abra = Abra();
-
-abra.get('https://example.com')
-    .then(res => console.log(res.data));
+import abra from 'abra.js';
 ```
 
-Abra.JS also supports the use of async/await, which is recommended for use in production.
+The default export is a ready to use instance (a singleton). If you need the class itself, for example for typing:
+
+```ts
+import abra, { Abra } from 'abra.js';
+
+abra === Abra.getInstance(); // true
+```
+
+## Usage
 
 ```js
 import abra from 'abra.js';
 
-async function getData() {
-    const {data} = await abra.get('https://example.com');
-    console.log(data);
+abra.get('https://example.com/api/users')
+    .then(res => console.log(res.data));
+```
+
+`async/await` works the same way:
+
+```js
+async function getUsers() {
+    const { data, response } = await abra.get('https://example.com/api/users');
+
+    console.log(data);            // parsed body
+    console.log(response.status); // the original fetch Response
 }
+```
+
+Every request resolves to `{ data, response }`:
+
+- `data`: the parsed body (see [Response parsing](#response-parsing))
+- `response`: the native `Response` object, for headers, status, url...
+
+With TypeScript, you can type the data:
+
+```ts
+type User = { id: number; name: string };
+
+const { data } = await abra.get<User[]>('https://example.com/api/users');
 ```
 
 ## Documentation
 
-Abra.JS is designed to be as simple as possible.
-
-
 ### Get
 
-Simple get request :
-
 ```js
-    abra.get(url, options);
+abra.get(url, options);
 ```
 
-- url : (string) url to fetch
-- options : (object) the options for the request ( params, headers, and any fetch options available);
+- `url`: (string) the URL to fetch
+- `options`: (object) the options of the request (`params`, `headers`, `timeout`, and any fetch option)
 
 ### Post, Put, Patch
 
-Simple post request :
-
 ```js
-    abra.post(url, body, options);
+abra.post(url, body, options);
+abra.put(url, body, options);
+abra.patch(url, body, options);
 ```
 
-- url : (string) url to fetch
-- body : (object) the data to send ( any type accepted by fetch )
-- options : (object) the options for the request ( params, headers, and any fetch options available)
-
-Exemple : 
+- `url`: (string) the URL to fetch
+- `body`: (object) the data to send, see below
+- `options`: (object) the options of the request
 
 ```js
-    abra.post('https://example.com', 
-        { name: 'Jean Micheline' }, 
-        { headers: 
-                { 'Content-Type': 'application/json' } 
-        });
+abra.post('https://example.com/api/users', { name: 'Jean Micheline' });
 ```
-There is no need to specify the content-type for JSON data.
-You don't need to transform your data to JSON, Abra.JS will do it for you.
 
-For every other type of data, you need to specify the content-type, and perform the transformation yourself.
+Abra.JS handles the body for you:
+
+| Body you give                                              | What is sent                                              |
+| ---------------------------------------------------------- | --------------------------------------------------------- |
+| An object or an array                                      | JSON, with `Content-Type: application/json` added for you |
+| A `FormData`                                               | `multipart/form-data`, boundary handled by fetch          |
+| A `URLSearchParams`                                        | `application/x-www-form-urlencoded`                       |
+| A string, `Blob`, `ArrayBuffer`, typed array or stream     | Sent as is                                                |
+
+If you set your own `Content-Type` header with an object body, Abra.JS only serializes it to JSON when that header is a JSON type. Otherwise, the body is passed as is and the transformation is up to you.
+
+```js
+// Upload a file
+const form = new FormData();
+form.append('file', fileInput.files[0]);
+
+await abra.post('https://example.com/upload', form);
+
+// Form urlencoded
+await abra.post(
+    'https://example.com/login',
+    new URLSearchParams({ email: 'toto@mail.fr', password: 'secret' })
+);
+```
+
+**Do not set `Content-Type: multipart/form-data` by hand.** Abra.JS removes it, because fetch must generate it itself to add the boundary.
 
 ### Delete
 
-Simple delete request :
-
 ```js
-    abra.delete(url, options);
+abra.delete(url, options);
 ```
 
+### All
+
+Run several requests in parallel:
+
+```js
+const [users, posts] = await abra.all(
+    abra.get('https://example.com/api/users'),
+    abra.get('https://example.com/api/posts')
+);
+
+console.log(users.data, posts.data);
+```
 
 ### Options
 
-Basically any fetch options available ( see [MDN](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch) ) can be used.
+Any [fetch option](https://developer.mozilla.org/en-US/docs/Web/API/fetch#options) can be used (`headers`, `credentials`, `mode`, `cache`...), plus two extra ones:
 
-Abra.JS also adds params options, which is an object containing the query parameters to add to the url.
+#### `params`
+
+An object (or a `URLSearchParams`) of query parameters to add to the URL.
 
 ```js
-    abra.get('https://example.com', { params: { name: 'Jean Micheline' } });
+abra.get('https://example.com/api/users', { params: { name: 'Jean Micheline', page: 2 } });
+// GET https://example.com/api/users?name=Jean+Micheline&page=2
 ```
 
-**Caution :** the _method_ option, available in fetch, is not supported by Abra.JS, as it is automatically set by the method used.
+If the URL already contains a query string, the params are appended to it.
 
+#### `timeout`
+
+A delay in milliseconds. If the server has not answered in time, the request is aborted and the promise rejects with a `TimeoutError`.
+
+```js
+abra.get('https://example.com/api/slow', { timeout: 5000 });
+```
+
+You can also pass your own `signal`. It is combined with the timeout, whichever comes first aborts the request.
+
+```js
+const controller = new AbortController();
+
+abra.get('https://example.com/api/users', { signal: controller.signal });
+
+controller.abort();
+```
+
+**Caution:** the `method` option of fetch is not supported, it is set by the method you call.
+
+### Response parsing
+
+`data` is parsed according to the `Content-Type` of the response:
+
+| Content-Type                                                 | `data`                  |
+| ------------------------------------------------------------ | ----------------------- |
+| contains `json`                                              | the parsed JSON         |
+| `text/*` or `application/xml`                                | a string                |
+| `multipart/form-data` or `application/x-www-form-urlencoded` | a `FormData`            |
+| anything else                                                | a `Blob`                |
+| no `Content-Type`, or `204` / `205` / empty body             | `null`                  |
+
+### Errors
+
+When the status is not in the 2xx range, the promise **rejects** with an `AbraError`, which extends `Error`:
+
+| Property     | Content                                                          |
+| ------------ | ---------------------------------------------------------------- |
+| `status`     | the HTTP status code, e.g. `404`                                 |
+| `statusText` | the HTTP status text, e.g. `Not Found`                           |
+| `data`       | the body of the error: parsed JSON, raw text, or `null` if empty |
+| `response`   | the native `Response` (headers, url...), its body is already read |
+
+```js
+import abra, { AbraError } from 'abra.js';
+
+try {
+    await abra.get('https://example.com/api/users/404');
+} catch (error) {
+    if (error instanceof AbraError) {
+        console.log(error.status); // 404
+        console.log(error.data);   // for example { message: 'User not found' }
+    } else {
+        throw error; // network error, timeout, abort...
+    }
+}
+```
+
+You can type `data`:
+
+```ts
+type ApiError = { message: string };
+
+if (error instanceof AbraError) {
+    const { message } = (error as AbraError<ApiError>).data;
+}
+```
+
+Network errors, timeouts and aborts are **not** wrapped: they reject with the usual `TypeError`, `TimeoutError` and `AbortError` of fetch.
 
 ### Interceptors
 
-Abra.JS provides interceptors, which are functions that are called before the request is sent, and before the response is returned.
+Interceptors are functions that let you change a request before it is sent, or a response before it is returned.
 
-Interceptors are useful to add headers, or to modify the request before it is sent.
-
-You can add 'in' interceptors, which are called before the request is sent, and 'out' interceptors, which are called before the response is returned.
-
-You can add interceptors with the following methods :
+- **Out** interceptors receive the **request** before it is sent.
+- **In** interceptors receive the **response** before it is parsed.
 
 ```js
+// Add a header to every request
+const addToken = (request) => {
+    const headers = new Headers(request.headers);
+    headers.set('Authorization', `Bearer ${token}`);
 
-    // Add an interceptor for requests
-    abra.addInInterceptor((request) => {
-        // do something with the request
-        return request;
-    });
+    return new Request(request, { headers });
+};
 
+abra.addOutInterceptor(addToken);
 
-    // Add an interceptor for responses
-    abra.addOutInterceptor((response) => {
-        // do something with the response
-        return response;
-    });
+// Do something with every response
+const logResponse = (response) => {
+    console.log(response.status, response.url);
+    return response;
+};
 
+abra.addInInterceptor(logResponse);
 ```
 
+An interceptor must **return** a `Request` (out) or a `Response` (in), or a promise of one. Interceptors can be `async`, and Abra.JS waits for each of them before calling the next one:
 
+```js
+let token = null;
+
+abra.addOutInterceptor(async (request) => {
+    token ??= await fetchToken();
+
+    const headers = new Headers(request.headers);
+    headers.set('Authorization', `Bearer ${token}`);
+
+    return new Request(request, { headers });
+});
+```
+
+An in interceptor only receives the response, not the request that produced it. It is therefore not the right place to retry a failed request.
+
+When you build a new object, use `new Request(request, { headers })`. Do not spread it (`{ ...request }`): the method, the body and the signal would be lost.
+
+Interceptors are called in the order they were added. To change that:
+
+```js
+abra.addOutInterceptor(callback);              // appended at the end (default)
+abra.addOutInterceptor(callback, true);        // first
+abra.addOutInterceptor(callback, false, true); // last (same as the default)
+```
+
+`addInInterceptor` takes the same arguments.
+
+To remove an interceptor, give the same function back:
+
+```js
+abra.removeInterceptor(addToken);
+```
+
+## Several instances
+
+The default export is a shared instance, and so are its interceptors: they apply to every request made through it, anywhere in your app. If you talk to several APIs, create independent instances:
+
+```js
+import { Abra } from 'abra.js';
+
+const github = Abra.create();
+const internal = Abra.create();
+
+github.addOutInterceptor(addGithubToken);
+internal.addOutInterceptor(addInternalToken);
+```
+
+`Abra.create()` returns a new instance each time, with no interceptors. `Abra.getInstance()` always returns the shared one.
+
+## Migrating from 1.x
+
+- **Errors**: failed requests used to reject with the raw body of the response. They now reject with an `AbraError` (see [Errors](#errors)): read the old value in `error.data`.
+- **Node.js 20.3 or later** is required, and `isomorphic-fetch` is no longer used.
+- **Interceptors order**: a new interceptor used to be inserted in second position. It is now appended at the end, `first` still puts it at the beginning.
+- **ES module only**: `require('abra.js')` is no longer supported.
+- 
 ## License
 
-I have no idea what license to use, but feel free to use this however you want.
+MIT, feel free to use this however you want.
 
 ## Author
 
-Abra.JS was created by Thaïs Révillon. 
-You can find me on LinkedIn at [@ThaisRevillon](https://www.linkedin.com/in/tha%C3%AFs-r%C3%A9villon-66a41717a/).
+Abra.JS was created by Thaïs Labouré.
 
 ## Contributing
 
-Feel free to contribute to this project, I will be happy to review your pull requests !
-Just make sure to follow the code style of the project, and the main goals of the project : simplicity and lightweight.
+Feel free to contribute to this project, I will be happy to review your pull requests!
+Just make sure to follow the code style of the project, and its main goals: simplicity and lightweight.
+
+```bash
+npm install
+npm test
+```
 
 ## Versioning
 
-This project is still in development, and is not yet ready for production.
 This is a personal project, and I will try to update it as much as possible, add tests and new features.
-

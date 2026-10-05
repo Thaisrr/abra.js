@@ -3,4 +3,5 @@ node_modules
 /dist
 todo.txt
 .index.js
-
+coverage
+.nyc_output

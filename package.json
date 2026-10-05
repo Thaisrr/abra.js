@@ -1,17 +1,18 @@
 {
   "name": "abra.js",
-  "version": "1.1.10",
+  "version": "2.0.0",
   "description": "A simple wrapper for fetch.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "test-db": "json-server --watch ./tests/mocks/datas.json -m ./node_modules/json-server-auth --port 8082 --routes ./tests/mocks/routes.json",
-    "test": "tsc && nyc ./node_modules/.bin/_mocha 'test/**/*.ts'",
-    "lets-go": "tsc && npm version patch && npm publish",
-    "maybe": "tsc && npm version patch && npm publish -- beta"
+    "build": "tsc",
+    "test": "npm run build && c8 mocha \"test/**/*.ts\"",
+    "lets-go": "npm run build && npm version patch && npm publish",
+    "maybe": "npm run build && npm version prerelease && npm publish --tag beta"
   },
   "keywords": [
     "typescript",
@@ -32,23 +33,16 @@
     "url": "https://github.com/Thaisrr/abra.js/issues"
   },
   "homepage": "https://github.com/Thaisrr/abra.js#readme",
-  "dependencies": {
-    "isomorphic-fetch": "^3.0.0",
-    "typescript": "^4.9.4"
-  },
   "devDependencies": {
-    "@testdeck/mocha": "^0.3.3",
-    "@types/chai": "^4.3.4",
-    "@types/mocha": "^10.0.1",
-    "@types/node-fetch": "^2.6.2",
-    "chai": "^4.3.7",
-    "json-server": "^0.17.1",
-    "json-server-auth": "^2.1.0",
-    "mocha": "^10.2.0",
-    "mocha-typescript": "^1.1.17",
-    "nock": "^13.2.9",
-    "nyc": "^15.1.0",
-    "ts-mockito": "^2.6.1",
-    "ts-node": "^10.9.1"
+    "@types/mocha": "^10.0.10",
+    "c8": "^12.0.0",
+    "chai": "^5.3.3",
+    "mocha": "^11.8.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "undici": "^8.11.2"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
